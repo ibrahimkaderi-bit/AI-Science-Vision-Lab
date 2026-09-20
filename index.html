@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="theme-color" content="#07111f">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="manifest" href="./manifest.webmanifest">
+<title>AI Science Vision Lab</title>
+<style>
+:root{
+  --bg:#06111d;--panel:#0c1c2b;--panel2:#10263b;--text:#eef8ff;--muted:#9cbdd1;
+  --cyan:#35d8ff;--blue:#5c7cff;--green:#44e29b;--yellow:#ffd166;--red:#ff5d73;
+  --line:rgba(255,255,255,.12);--safeT:env(safe-area-inset-top);--safeB:env(safe-area-inset-bottom)
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,"Segoe UI",Tahoma,Arial,sans-serif;min-height:100%}
+body{padding-bottom:calc(82px + var(--safeB))}
+header{
+  position:sticky;top:0;z-index:50;padding:calc(10px + var(--safeT)) 14px 10px;
+  display:flex;align-items:center;justify-content:space-between;gap:10px;background:rgba(6,17,29,.9);
+  border-bottom:1px solid var(--line);backdrop-filter:blur(12px)
+}
+.brand{display:flex;gap:10px;align-items:center;min-width:0}.logo{width:40px;height:40px;border-radius:13px;display:grid;place-items:center;
+background:linear-gradient(135deg,var(--cyan),var(--blue));font-size:23px;box-shadow:0 0 25px rgba(53,216,255,.23)}
+.brand b{display:block;font-size:15px}.brand small{display:block;color:var(--muted);font-size:10px;white-space:nowrap}
+.statusDot{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--muted);white-space:nowrap}
+.dot{width:9px;height:9px;border-radius:50%;background:#7c8790}.dot.ok{background:var(--green);box-shadow:0 0 12px var(--green)}.dot.bad{background:var(--red)}
+main{max-width:760px;margin:auto;padding:12px}
+.card{background:linear-gradient(180deg,rgba(16,38,59,.96),rgba(9,25,39,.97));border:1px solid var(--line);
+border-radius:20px;padding:14px;margin-bottom:12px;box-shadow:0 16px 40px rgba(0,0,0,.25)}
+.cameraCard{padding:0;overflow:hidden;position:relative;background:#000;aspect-ratio:3/4;max-height:72vh}
+video,canvas{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.mirror{transform:scaleX(-1)}.mirrorCanvas{transform:scaleX(-1)}
+.camOverlay{position:absolute;inset:0;pointer-events:none;display:flex;flex-direction:column;justify-content:space-between;padding:12px;z-index:5}
+.topHUD{display:flex;justify-content:space-between;gap:8px}
+.pill{background:rgba(3,12,20,.72);border:1px solid rgba(255,255,255,.18);padding:7px 10px;border-radius:999px;font-size:11px;backdrop-filter:blur(8px)}
+.guide{align-self:center;text-align:center;background:rgba(3,12,20,.70);padding:8px 11px;border-radius:12px;font-size:11px;color:#d9f5ff;max-width:90%}
+.modebar{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.modebtn,.btn{
+ border:1px solid var(--line);background:#10263b;color:var(--text);border-radius:13px;padding:11px 10px;font-weight:700
+}
+.modebtn.active{background:linear-gradient(135deg,var(--cyan),var(--blue));color:#03121d;border:0}
+.controls{display:grid;grid-template-columns:1fr 1fr;gap:8px}.btn.primary{background:linear-gradient(135deg,var(--cyan),var(--blue));color:#03121d;border:0}
+.btn.green{background:linear-gradient(135deg,var(--green),#22c7a7);color:#042016;border:0}
+.btn.warn{background:rgba(255,209,102,.12);color:#ffe4a0;border-color:rgba(255,209,102,.35)}
+.metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.metric{background:#071725;border:1px solid var(--line);border-radius:15px;padding:10px;text-align:center}
+.metric strong{font-size:24px;color:var(--cyan);display:block}.metric small{font-size:10px;color:var(--muted)}
+.ai{background:rgba(53,216,255,.07);border:1px solid rgba(53,216,255,.25);border-radius:16px;padding:12px;line-height:1.75;font-size:13px}
+.ai b{color:#8feaff}.tag{display:inline-flex;gap:6px;align-items:center;border-radius:999px;padding:5px 9px;font-size:10px;font-weight:800;background:rgba(68,226,155,.1);color:#79edb5}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.grow{flex:1}
+input,select{width:100%;background:#071725;color:white;border:1px solid var(--line);border-radius:12px;padding:11px;outline:none}
+label{display:block;color:#c7dfec;font-size:12px;margin:8px 0 5px}
+.tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}
+.sciBox{padding:11px;background:#081827;border-right:4px solid var(--cyan);border-radius:12px;font-size:12px;line-height:1.7}
+.warning{border-right-color:var(--yellow);background:rgba(255,209,102,.07)}
+.bottomNav{
+ position:fixed;bottom:0;left:0;right:0;z-index:60;padding:8px 10px calc(8px + var(--safeB));display:grid;grid-template-columns:repeat(4,1fr);
+ gap:6px;background:rgba(6,17,29,.94);border-top:1px solid var(--line);backdrop-filter:blur(12px)
+}
+.navbtn{background:transparent;color:#a9c7d9;border:0;padding:7px 4px;border-radius:12px;font-size:10px}.navbtn span{font-size:20px;display:block}
+.navbtn.active{color:#fff;background:#10263b}
+.hidden{display:none!important}
+.log{max-height:220px;overflow:auto;border:1px solid var(--line);border-radius:12px}
+table{border-collapse:collapse;width:100%;font-size:11px}th,td{padding:7px;border-bottom:1px solid var(--line);text-align:center}th{position:sticky;top:0;background:#10263b}
+.toast{position:fixed;top:90px;left:50%;transform:translateX(-50%);z-index:100;background:#071725;border:1px solid var(--line);
+padding:10px 14px;border-radius:999px;font-size:12px;opacity:0;pointer-events:none;transition:.25s;max-width:92%;text-align:center}
+.toast.show{opacity:1}
+h2{font-size:17px;margin:0 0 10px}p{margin:6px 0}.tiny{font-size:10px;color:var(--muted)}
+@media(min-width:700px){.cameraCard{aspect-ratio:16/10}.brand b{font-size:18px}.metrics{grid-template-columns:repeat(6,1fr)}}
+</style>
+</head>
+<body>
+<header>
+  <div class="brand">
+    <div class="logo">🔬</div>
+    <div><b>AI Science Vision Lab</b><small>مختبر العلوم بالرؤية الاصطناعية • الصف العاشر</small></div>
+  </div>
+  <div class="statusDot"><span id="dot" class="dot"></span><span id="modelStatus">تحميل AI…</span></div>
+</header>
+
+<main>
+  <section id="labPage">
+    <div class="card">
+      <div class="modebar">
+        <button class="modebtn active" data-mode="squat">🦵 القرفصاء</button>
+        <button class="modebtn" data-mode="elbow">💪 المرفق</button>
+        <button class="modebtn" data-mode="jump">⬆️ القفز</button>
+      </div>
+    </div>
+
+    <div class="card cameraCard">
+      <video id="video" playsinline muted autoplay></video>
+      <canvas id="canvas"></canvas>
+      <div class="camOverlay">
+        <div class="topHUD">
+          <div id="poseState" class="pill">لم يتم تشغيل الكاميرا</div>
+          <div id="fps" class="pill">AI: -- FPS</div>
+        </div>
+        <div id="guide" class="guide">ضع الجسم كاملًا داخل الإطار ثم اضغط «تشغيل الكاميرا»</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="controls">
+        <button id="cameraBtn" class="btn primary">📷 تشغيل الكاميرا</button>
+        <button id="switchBtn" class="btn">🔄 تبديل الكاميرا</button>
+        <button id="calibrateBtn" class="btn green">🎯 معايرة الوقوف</button>
+        <button id="snapBtn" class="btn">📸 حفظ لقطة</button>
+      </div>
+      <div class="tiny" style="margin-top:8px">للوصول للكاميرا يجب فتح التطبيق من رابط HTTPS آمن. لا تُرسل صور الكاميرا إلى خادم التحليل؛ الاستدلال يتم على الجهاز باستخدام MediaPipe.</div>
+    </div>
+
+    <div class="card">
+      <h2>القياسات الحية</h2>
+      <div class="metrics">
+        <div class="metric"><strong id="m1">--</strong><small id="m1l">زاوية الركبة</small></div>
+        <div class="metric"><strong id="m2">--</strong><small id="m2l">زاوية الورك</small></div>
+        <div class="metric"><strong id="m3">0</strong><small id="m3l">التكرارات</small></div>
+        <div class="metric"><strong id="m4">--</strong><small id="m4l">المرحلة</small></div>
+        <div class="metric"><strong id="m5">--</strong><small>الثقة</small></div>
+        <div class="metric"><strong id="m6">--</strong><small id="m6l">متغير علمي</small></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>🤖 التحليل العلمي المباشر</h2>
+      <div id="scienceAnalysis" class="ai"><span class="tag">AI Science</span><p>شغّل الكاميرا ثم نفّذ الحركة. سيستخدم التطبيق نموذج رؤية حاسوبية لاكتشاف مفاصل الجسم وتحليلها.</p></div>
+    </div>
+  </section>
+
+  <section id="experimentPage" class="hidden">
+    <div class="card">
+      <h2>إعداد التجربة</h2>
+      <label>اسم الطالب / المجموعة</label>
+      <input id="studentName" placeholder="مثال: المجموعة 1">
+      <label>طول الطالب (سم) — يستخدم فقط لتقدير ارتفاع القفزة</label>
+      <input id="studentHeight" type="number" min="120" max="220" value="170">
+      <label>سؤال الاستقصاء</label>
+      <select id="question">
+        <option>كيف تتغير زاوية الركبة أثناء القرفصاء؟</option>
+        <option>كيف تتغير زاوية المرفق أثناء الثني والبسط؟</option>
+        <option>كيف تتحول الطاقة أثناء القفز إلى أعلى؟</option>
+      </select>
+    </div>
+    <div class="card">
+      <h2>الفرضية → القياس → التحقق</h2>
+      <div class="sciBox"><b>الفرضية المقترحة:</b> عندما ينخفض الجسم في القرفصاء تقل زاوية الركبة، وعند العودة للوقوف تزداد باتجاه 180°.</div>
+      <div class="sciBox warning" style="margin-top:8px"><b>التحقق العلمي:</b> الذكاء الاصطناعي هنا يقيس نمط الحركة. الطلاب هم من يفسرون العلاقة ويقارنونها بالمفهوم العلمي.</div>
+    </div>
+    <div class="card">
+      <div class="controls">
+        <button id="recordBtn" class="btn green">⏺ بدء تسجيل البيانات</button>
+        <button id="clearBtn" class="btn warn">🗑 مسح الجلسة</button>
+      </div>
+      <p class="tiny">يتم تسجيل قيم القياسات فقط، وليس فيديو الكاميرا.</p>
+    </div>
+  </section>
+
+  <section id="dataPage" class="hidden">
+    <div class="card">
+      <h2>بيانات الجلسة</h2>
+      <div class="row">
+        <button id="csvBtn" class="btn primary grow">⬇️ تصدير CSV</button>
+        <button id="summaryBtn" class="btn grow">🧠 إنشاء استنتاج</button>
+      </div>
+    </div>
+    <div class="card">
+      <div id="summary" class="ai">ابدأ تسجيل تجربة ثم أنشئ الاستنتاج.</div>
+    </div>
+    <div class="card">
+      <div class="log">
+        <table>
+          <thead><tr><th>الزمن</th><th>الوضع</th><th>قياس 1</th><th>قياس 2</th><th>الحالة</th></tr></thead>
+          <tbody id="logBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section id="aboutPage" class="hidden">
+    <div class="card">
+      <h2>كيف يعمل التطبيق؟</h2>
+      <p>1. تلتقط كاميرا الهاتف إطار الفيديو.</p>
+      <p>2. يكتشف نموذج <b>Pose Landmarker</b> نقاط الجسم الرئيسية.</p>
+      <p>3. يحسب التطبيق الزوايا والحركة من الإحداثيات.</p>
+      <p>4. تُحوّل القياسات إلى تفسير علمي مناسب للصف العاشر.</p>
+      <div class="sciBox" style="margin-top:10px"><b>AI Suggests → Students Investigate → Science Verifies</b></div>
+    </div>
+    <div class="card">
+      <h2>حدود القياس</h2>
+      <p class="tiny">التطبيق تعليمي وليس أداة طبية أو رياضية تشخيصية. زاوية الكاميرا، بعد الطالب، الإضاءة، إخفاء أجزاء الجسم، والملابس قد تؤثر في القياسات. ارتفاع القفزة تقدير بصري تقريبي وليس بديلًا عن منصة قوة أو مستشعر حركة معاير.</p>
+    </div>
+  </section>
+</main>
+
+<nav class="bottomNav">
+  <button class="navbtn active" data-page="labPage"><span>📷</span>المختبر</button>
+  <button class="navbtn" data-page="experimentPage"><span>🧪</span>التجربة</button>
+  <button class="navbtn" data-page="dataPage"><span>📊</span>البيانات</button>
+  <button class="navbtn" data-page="aboutPage"><span>ℹ️</span>حول</button>
+</nav>
+
+<div id="toast" class="toast"></div>
+
+<script type="module">
+import { FilesetResolver, PoseLandmarker } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@1.0.1/vision_bundle.mjs";
+
+const MODEL_URL="https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/1/pose_landmarker_lite.task";
+const WASM_URL="https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@1.0.1/wasm";
+
+const video=document.getElementById("video"), canvas=document.getElementById("canvas"), ctx=canvas.getContext("2d");
+const statusEl=document.getElementById("modelStatus"), dot=document.getElementById("dot"), poseState=document.getElementById("poseState");
+const guide=document.getElementById("guide"), fpsEl=document.getElementById("fps"), analysisEl=document.getElementById("scienceAnalysis");
+let landmarker=null, stream=null, running=false, facing="user", mode="squat", lastVideoTime=-1, lastFrameTs=performance.now(), fpsSmooth=0;
+let calibrated=false, baselineHipY=null, baselineBodyPx=null, squatPhase="UP", squatCount=0, elbowCount=0, elbowPhase="OPEN", jumpCount=0, jumpPhase="GROUND";
+let recording=false, session=[], lastLog=0, lastMetrics=null;
+
+const connections=[[11,12],[11,13],[13,15],[12,14],[14,16],[11,23],[12,24],[23,24],[23,25],[25,27],[27,29],[29,31],[24,26],[26,28],[28,30],[30,32]];
+const $=id=>document.getElementById(id);
+function toast(msg){const t=$("toast");t.textContent=msg;t.classList.add("show");setTimeout(()=>t.classList.remove("show"),2500)}
+function clamp(v,a,b){return Math.max(a,Math.min(b,v))}
+function deg(a){return Math.round(a)}
+function visible(p){return p && (p.visibility??1)>.45}
+function angle(a,b,c){
+  if(!a||!b||!c)return NaN;
+  const ab={x:a.x-b.x,y:a.y-b.y}, cb={x:c.x-b.x,y:c.y-b.y};
+  const den=Math.hypot(ab.x,ab.y)*Math.hypot(cb.x,cb.y); if(!den)return NaN;
+  return Math.acos(clamp((ab.x*cb.x+ab.y*cb.y)/den,-1,1))*180/Math.PI;
+}
+function avg(...xs){const v=xs.filter(Number.isFinite);return v.length?v.reduce((a,b)=>a+b,0)/v.length:NaN}
+function midpoint(a,b){return {x:(a.x+b.x)/2,y:(a.y+b.y)/2}}
+function bodyPixelHeight(lm){
+  const shoulders=midpoint(lm[11],lm[12]), ankles=midpoint(lm[27],lm[28]);
+  return Math.abs(ankles.y-shoulders.y)*canvas.height;
+}
+function setMetric(id,val,label){$(id).textContent=val; if(label)$(id+"l").textContent=label}
+function confidence(lm){return Math.round(avg(...[11,12,23,24,25,26,27,28].map(i=>(lm[i]?.visibility??0)))*100)}
+
+async function initAI(){
+  try{
+    statusEl.textContent="تحميل النموذج…";
+    const vision=await FilesetResolver.forVisionTasks(WASM_URL);
+    try{
+      landmarker=await PoseLandmarker.createFromOptions(vision,{
+        baseOptions:{modelAssetPath:MODEL_URL,delegate:"GPU"},
+        runningMode:"VIDEO",numPoses:1,minPoseDetectionConfidence:.5,minPosePresenceConfidence:.5,minTrackingConfidence:.5
+      });
+    }catch(e){
+      landmarker=await PoseLandmarker.createFromOptions(vision,{
+        baseOptions:{modelAssetPath:MODEL_URL},
+        runningMode:"VIDEO",numPoses:1,minPoseDetectionConfidence:.5,minPosePresenceConfidence:.5,minTrackingConfidence:.5
+      });
+    }
+    statusEl.textContent="AI جاهز";dot.className="dot ok";toast("تم تحميل نموذج الرؤية الحاسوبية");
+  }catch(e){
+    console.error(e);statusEl.textContent="تعذر تحميل AI";dot.className="dot bad";
+    analysisEl.innerHTML=`<span class="tag">خطأ</span><p>تعذر تحميل نموذج الذكاء الاصطناعي. تحقق من اتصال الإنترنت في أول تشغيل ثم أعد فتح الصفحة.</p>`;
+  }
+}
+initAI();
+
+async function startCamera(){
+  if(!window.isSecureContext){
+    toast("الكاميرا تحتاج رابط HTTPS آمن"); 
+    analysisEl.innerHTML=`<b>تنبيه:</b> المتصفح يمنع الكاميرا في الصفحات غير الآمنة. ارفع ملفات التطبيق إلى استضافة HTTPS ثم افتح الرابط من الهاتف.`;
+    return;
+  }
+  try{
+    if(stream) stream.getTracks().forEach(t=>t.stop());
+    stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:facing,width:{ideal:1280},height:{ideal:720}},audio:false});
+    video.srcObject=stream;await video.play();running=true;
+    video.classList.toggle("mirror",facing==="user");canvas.classList.toggle("mirrorCanvas",facing==="user");
+    $("cameraBtn").textContent="⏹ إيقاف الكاميرا";poseState.textContent="ابحث عن الجسم…";guide.textContent="قف بحيث يظهر الرأس والقدمين بوضوح";
+    requestAnimationFrame(loop);
+  }catch(e){console.error(e);toast("لم يتم السماح بالكاميرا");poseState.textContent="تعذر فتح الكاميرا"}
+}
+function stopCamera(){
+  running=false;if(stream){stream.getTracks().forEach(t=>t.stop());stream=null}
+  $("cameraBtn").textContent="📷 تشغيل الكاميرا";poseState.textContent="الكاميرا متوقفة";ctx.clearRect(0,0,canvas.width,canvas.height)
+}
+$("cameraBtn").onclick=()=>running?stopCamera():startCamera();
+$("switchBtn").onclick=async()=>{facing=facing==="user"?"environment":"user";if(running)await startCamera()};
+$("calibrateBtn").onclick=()=>{
+  if(!lastMetrics||!lastMetrics.hipY){toast("قف أمام الكاميرا أولًا");return}
+  baselineHipY=lastMetrics.hipY;baselineBodyPx=lastMetrics.bodyPx;calibrated=true;toast("تمت معايرة وضع الوقوف");
+};
+$("snapBtn").onclick=()=>{
+  if(!video.videoWidth){toast("شغّل الكاميرا أولًا");return}
+  const c=document.createElement("canvas");c.width=canvas.width;c.height=canvas.height;const x=c.getContext("2d");
+  if(facing==="user"){x.translate(c.width,0);x.scale(-1,1)}
+  x.drawImage(video,0,0,c.width,c.height); if(facing==="user"){x.setTransform(1,0,0,1,0,0);x.translate(c.width,0);x.scale(-1,1)}
+  x.drawImage(canvas,0,0,c.width,c.height);
+  const a=document.createElement("a");a.download=`AI_Science_${Date.now()}.png`;a.href=c.toDataURL("image/png");a.click();
+};
+
+function resizeCanvas(){
+  if(canvas.width!==video.videoWidth||canvas.height!==video.videoHeight){canvas.width=video.videoWidth;canvas.height=video.videoHeight}
+}
+function drawPose(lm){
+  ctx.clearRect(0,0,canvas.width,canvas.height);ctx.lineWidth=Math.max(3,canvas.width/250);ctx.strokeStyle="#35d8ff";ctx.fillStyle="#44e29b";
+  for(const [a,b] of connections){
+    if(visible(lm[a])&&visible(lm[b])){ctx.beginPath();ctx.moveTo(lm[a].x*canvas.width,lm[a].y*canvas.height);ctx.lineTo(lm[b].x*canvas.width,lm[b].y*canvas.height);ctx.stroke()}
+  }
+  for(const i of [11,12,13,14,15,16,23,24,25,26,27,28,29,30,31,32]){
+    if(visible(lm[i])){ctx.beginPath();ctx.arc(lm[i].x*canvas.width,lm[i].y*canvas.height,Math.max(4,canvas.width/170),0,Math.PI*2);ctx.fill()}
+  }
+}
+function processPose(lm){
+  const leftK=angle(lm[23],lm[25],lm[27]), rightK=angle(lm[24],lm[26],lm[28]);
+  const knee=avg(leftK,rightK);
+  const leftHip=angle(lm[11],lm[23],lm[25]), rightHip=angle(lm[12],lm[24],lm[26]);
+  const hipAng=avg(leftHip,rightHip);
+  const leftE=angle(lm[11],lm[13],lm[15]), rightE=angle(lm[12],lm[14],lm[16]);
+  const elbow=avg(leftE,rightE);
+  const hip=midpoint(lm[23],lm[24]); const bpx=bodyPixelHeight(lm); const conf=confidence(lm);
+  const m={knee,hipAng,elbow,hipY:hip.y,bodyPx:bpx,conf,state:"",v1:null,v2:null};
+  if(mode==="squat"){
+    if(knee<105 && squatPhase==="UP"){squatPhase="DOWN"}
+    if(knee>155 && squatPhase==="DOWN"){squatPhase="UP";squatCount++}
+    m.state=squatPhase==="DOWN"?"نزول/ثني":"وقوف/بسط";m.v1=knee;m.v2=hipAng;
+    setMetric("m1",Number.isFinite(knee)?deg(knee)+"°":"--","زاوية الركبة");
+    setMetric("m2",Number.isFinite(hipAng)?deg(hipAng)+"°":"--","زاوية الورك");
+    setMetric("m3",squatCount,"التكرارات");setMetric("m4",m.state,"المرحلة");setMetric("m6",knee<110?"Flexion":"Extension","حركة المفصل");
+    analysisEl.innerHTML=knee<115?
+      `<span class="tag">تحليل مباشر</span><p><b>Flexion:</b> تقل زاوية الركبة أثناء نزول الجسم. العضلات تنتج قوة للتحكم في الحركة ومقاومة تأثير الجاذبية.</p>`:
+      `<span class="tag">تحليل مباشر</span><p><b>Extension:</b> تزداد زاوية الركبة باتجاه وضع الوقوف. أثناء الصعود تتحول الطاقة الكيميائية في العضلات إلى شغل ميكانيكي لرفع مركز كتلة الجسم.</p>`;
+  }else if(mode==="elbow"){
+    if(elbow<75 && elbowPhase==="OPEN")elbowPhase="CLOSED";
+    if(elbow>145 && elbowPhase==="CLOSED"){elbowPhase="OPEN";elbowCount++}
+    m.state=elbowPhase==="CLOSED"?"ثني":"بسط";m.v1=elbow;m.v2=NaN;
+    setMetric("m1",Number.isFinite(elbow)?deg(elbow)+"°":"--","زاوية المرفق");setMetric("m2","--","قياس إضافي");
+    setMetric("m3",elbowCount,"التكرارات");setMetric("m4",m.state,"المرحلة");setMetric("m6",elbow<90?"Flexion":"Extension","نوع الحركة");
+    analysisEl.innerHTML=elbow<90?
+      `<span class="tag">تحليل مباشر</span><p>عند <b>ثني المرفق</b> تقل الزاوية بين العضد والساعد. تعمل العضلات حول المفصل في أزواج متعاكسة لإنتاج الحركة والتحكم فيها.</p>`:
+      `<span class="tag">تحليل مباشر</span><p>عند <b>بسط المرفق</b> تزداد الزاوية. يمكن للطلاب ربط ذلك بعمل العضلات المتقابلة حول المفصل.</p>`;
+  }else{
+    let jumpCm=NaN, disp=NaN;
+    if(calibrated && baselineHipY!=null && baselineBodyPx>20){
+      const px=(baselineHipY-hip.y)*canvas.height; disp=px;
+      const h=Number($("studentHeight").value)||170; jumpCm=px/baselineBodyPx*h*0.78;
+      if(jumpCm>8 && jumpPhase==="GROUND")jumpPhase="AIR";
+      if(jumpCm<3 && jumpPhase==="AIR"){jumpPhase="GROUND";jumpCount++}
+    }
+    m.state=calibrated?(jumpPhase==="AIR"?"في الهواء":"على الأرض"):"يحتاج معايرة";m.v1=jumpCm;m.v2=disp;
+    setMetric("m1",Number.isFinite(jumpCm)?Math.max(0,jumpCm).toFixed(1)+" cm":"--","ارتفاع تقريبي");
+    setMetric("m2",Number.isFinite(disp)?Math.max(0,disp).toFixed(0)+" px":"--","إزاحة الصورة");
+    setMetric("m3",jumpCount,"عدد القفزات");setMetric("m4",m.state,"الحالة");
+    const h=Number($("studentHeight").value)||170; const massLabel="PE ↑ / KE ↕";setMetric("m6",massLabel,"تحول الطاقة");
+    analysisEl.innerHTML=!calibrated?
+      `<span class="tag">الخطوة التالية</span><p>قف مستقيمًا ثم اضغط <b>معايرة الوقوف</b>. بعدها اقفز في المكان وسيقيس التطبيق الإزاحة الرأسية تقريبياً.</p>`:
+      `<span class="tag">تحليل مباشر</span><p>أثناء الصعود تزداد <b>طاقة وضع الجاذبية</b> مع ارتفاع مركز كتلة الجسم. أثناء الهبوط تتحول هذه الطاقة إلى طاقة حركية. تقدير الارتفاع بصري وتعليمي ويتأثر بمنظور الكاميرا.</p>`;
+  }
+  setMetric("m5",conf+"%");
+  poseState.textContent=conf>65?"✅ جسم مكتشف":"⚠️ حسّن وضع الجسم";
+  return m;
+}
+async function loop(now){
+  if(!running)return;
+  if(!landmarker){requestAnimationFrame(loop);return}
+  resizeCanvas();
+  if(video.currentTime!==lastVideoTime && video.readyState>=2){
+    lastVideoTime=video.currentTime;
+    try{
+      const res=landmarker.detectForVideo(video,now);
+      if(res.landmarks&&res.landmarks.length){
+        const lm=res.landmarks[0];drawPose(lm);lastMetrics=processPose(lm);
+        guide.textContent=mode==="squat"?"نفّذ قرفصاء ببطء مع ظهور الجسم كاملًا":mode==="elbow"?"اثنِ وابسط الذراع بوضوح":"بعد المعايرة اقفز عموديًا في مكانك";
+        if(recording && now-lastLog>250){lastLog=now;logMetrics(lastMetrics)}
+      }else{ctx.clearRect(0,0,canvas.width,canvas.height);poseState.textContent="لم يُكتشف جسم";guide.textContent="ابتعد قليلًا وأظهر الرأس والقدمين"}
+    }catch(e){console.error(e)}
+    const dt=now-lastFrameTs;if(dt>0){const f=1000/dt;fpsSmooth=fpsSmooth?fpsSmooth*.85+f*.15:f;fpsEl.textContent=`AI: ${fpsSmooth.toFixed(0)} FPS`}lastFrameTs=now;
+  }
+  requestAnimationFrame(loop);
+}
+function logMetrics(m){
+  const row={t:(performance.now()/1000).toFixed(2),mode,v1:Number.isFinite(m.v1)?m.v1.toFixed(2):"",v2:Number.isFinite(m.v2)?m.v2.toFixed(2):"",state:m.state};
+  session.push(row);const tr=document.createElement("tr");tr.innerHTML=`<td>${row.t}</td><td>${row.mode}</td><td>${row.v1}</td><td>${row.v2}</td><td>${row.state}</td>`;$("logBody").prepend(tr);
+}
+document.querySelectorAll(".modebtn").forEach(b=>b.onclick=()=>{
+  document.querySelectorAll(".modebtn").forEach(x=>x.classList.remove("active"));b.classList.add("active");mode=b.dataset.mode;
+  if(mode==="squat"){squatCount=0;squatPhase="UP"} if(mode==="elbow"){elbowCount=0;elbowPhase="OPEN"} if(mode==="jump"){jumpCount=0;jumpPhase="GROUND"}
+  toast(mode==="squat"?"وضع القرفصاء":mode==="elbow"?"وضع المرفق":"وضع القفز");
+});
+document.querySelectorAll(".navbtn").forEach(b=>b.onclick=()=>{
+  document.querySelectorAll(".navbtn").forEach(x=>x.classList.remove("active"));b.classList.add("active");
+  ["labPage","experimentPage","dataPage","aboutPage"].forEach(id=>$(id).classList.toggle("hidden",id!==b.dataset.page));
+});
+$("recordBtn").onclick=()=>{recording=!recording;$("recordBtn").textContent=recording?"⏹ إيقاف تسجيل البيانات":"⏺ بدء تسجيل البيانات";toast(recording?"بدأ تسجيل القياسات":"تم إيقاف التسجيل")};
+$("clearBtn").onclick=()=>{session=[];$("logBody").innerHTML="";$("summary").textContent="تم مسح الجلسة.";toast("تم مسح البيانات")};
+$("csvBtn").onclick=()=>{
+  if(!session.length){toast("لا توجد بيانات للتصدير");return}
+  const head="time_s,mode,measure_1,measure_2,state\n";const body=session.map(r=>`${r.t},${r.mode},${r.v1},${r.v2},"${r.state}"`).join("\n");
+  const blob=new Blob(["\ufeff"+head+body],{type:"text/csv;charset=utf-8"});const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="AI_Science_Vision_Data.csv";a.click();URL.revokeObjectURL(a.href);
+};
+$("summaryBtn").onclick=()=>{
+  if(!session.length){toast("سجل تجربة أولًا");return}
+  const vals=session.map(r=>Number(r.v1)).filter(Number.isFinite);const min=Math.min(...vals),max=Math.max(...vals),mean=vals.reduce((a,b)=>a+b,0)/vals.length;
+  const label=mode==="squat"?"زاوية الركبة":mode==="elbow"?"زاوية المرفق":"ارتفاع القفزة التقريبي";
+  $("summary").innerHTML=`<span class="tag">استنتاج الجلسة</span><p>تم تحليل <b>${session.length}</b> قراءة. تراوح ${label} بين <b>${min.toFixed(1)}</b> و <b>${max.toFixed(1)}</b>، بمتوسط <b>${mean.toFixed(1)}</b>.</p><p>ينبغي تفسير النمط مع ظروف التجربة وزاوية الكاميرا، وتكرار القياس لزيادة موثوقية الاستنتاج.</p>`;
+};
+if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("./service-worker.js").catch(()=>{}))}
+</script>
+</body>
+</html>
